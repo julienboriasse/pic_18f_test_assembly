@@ -16,7 +16,7 @@
         Product Revision  :  PIC10 / PIC12 / PIC16 / PIC18 MCUs - 1.81.8
         Device            :  PIC18F25K80
         Driver Version    :  2.00
-*/
+ */
 
 /*
     (c) 2018 Microchip Technology Inc. and its subsidiaries. 
@@ -39,15 +39,14 @@
     CLAIMS IN ANY WAY RELATED TO THIS SOFTWARE WILL NOT EXCEED THE AMOUNT 
     OF FEES, IF ANY, THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS 
     SOFTWARE.
-*/
+ */
 
 #include "mcc_generated_files/mcc.h"
 
 /*
                          Main application
  */
-void main(void)
-{
+void main(void) {
     // Initialize the device
     SYSTEM_Initialize();
 
@@ -72,70 +71,77 @@ void main(void)
     uint8_t rxData;
     uint8_t rxChecked = false;
     uint8_t ledChecked = false;
-    
-    printf("\r\n\r\nCoucou, c'est le PIC18F25K80 qui te parle !\r\n");
-    printf("Est-ce que la DEL verte clignote 5 fois ? ");
-    
-    __delay_ms(2000);
-    
-    for (int i=0; i<5 ; i++) {
+
+    for (int i = 0; i < 5; i++) {
         IO_RA5_SetHigh();
-        __delay_ms(200);
+        __delay_ms(100);
         IO_RA5_SetLow();
-        __delay_ms(200);
+        __delay_ms(100);
     }
-    
-    // Message d'accueil qui permet de vérifier l'émission
-    printf("(O/N)\r\n\r\n");
+
+    printf("\r\n\r\nCoucou, c'est le PIC18F25K80 qui te parle !\r\n");
+    printf("Est-ce que tu peux lire ce message ? (O/N)\r\n\r\n");
 
     while (rxChecked == false) {
-        // On écoute les message en reception
-        if (EUSART1_is_rx_ready()) {
-            rxData = EUSART1_Read();
+        rxData = EUSART1_Read();
 
-            // On vérifie que le caractère reçu est un O ou un o
-            if (rxData == 'o' || rxData == 'O') {
-                rxChecked = true;
-                ledChecked = true;
-            }
-            // On vérifie que le caractère reçu est un O ou un o
-            else if (rxData == 'n' || rxData == 'N') {
-                rxChecked = true;
-                ledChecked = false;
-            }
-            // Si un autre caractère est reçu, on demande une nouvelle entrée
-            else {
-                printf("Tu dois taper la touche O si la DEL verte clignote 5 fois, N sinon.\r\n");
-            }
+        // On vérifie que le caractère reçu est un O ou un o
+        if (rxData == 'o' || rxData == 'O') {
+            rxChecked = true;
+        } else {
+            printf("Tu dois taper la touche O si tu peux lire ce message.\r\n");
         }
-        __delay_ms(10);
     }
 
-    if (ledChecked) {
-        // Message qui indique qu'on a vérifier le RX et le TX
-        printf("Excellent, si tu lis ce message, ta carte et ta configuration sont correctes.\r\n");
-        printf("La DEL a bien clignote, le PIC est capable d'envoyer et de recevoir des messages sur la liaison serie.\r\n");
-        printf("Amuse-toi bien...\r\n\r\n");
-    }
-    else {
-        // Message qui indique qu'on a vérifier le RX et le TX
-        printf("Le PIC est capable d'envoyer et de recevoir des messages sur la liaison serie.\r\n");
-        printf("Par contre, tu n'as pas vu la DEL verte clignoter.\r\n");
-        printf("Appuye sur le bouton Reset ou debranche et rebranche l'alimentation de ta carte.");
-        printf("Si le probleme persiste, demande de l'aide.\r\n\r\n");
-    }
-    
-    // Programme terminé, faire clignoter la DEL lentement
-    while (1) {
+    printf("Super, maintenant appuye sur n'importe quelle touche et observe la DEL verte.\r\n");
+    printf("Elle devrait clignoter 5 fois.\r\n\r\n");
+
+    while (EUSART1_Read() == 1);
+
+    for (int i = 0; i < 5; i++) {
         IO_RA5_SetHigh();
-        __delay_ms(50);
+        __delay_ms(200);
         IO_RA5_SetLow();
-        __delay_ms(950);
-        
-        printf("Fin du programme.\r\n");
+        __delay_ms(200);
     }
-    
+
+    printf("Est-ce que la DEL a clignote 5 fois ? (O/N)\r\n\r\n");
+
+    while (ledChecked == false) {
+        rxData = EUSART1_Read();
+
+        // On vérifie que le caractère reçu est un O ou un o
+        if (rxData == 'o' || rxData == 'O') {
+            ledChecked = true;
+        } else if (rxData == 'n' || rxData == 'N') {
+            printf("Si la DEL n'a pas clignote, demande de l'aide.\r\n");
+            printf("Reessayons encore une fois...\r\n");
+
+            for (int i = 0; i < 5; i++) {
+                IO_RA5_SetHigh();
+                __delay_ms(200);
+                IO_RA5_SetLow();
+                __delay_ms(200);
+            }
+            
+            printf("Est-ce que la DEL a clignote 5 fois ? (O/N)\r\n\r\n");            
+        }
+        else {
+            printf("Tu dois taper la touche O si la DEL a clignote.\r\n");
+        }
+    }
+
+
+    // Message de succès
+    printf("Excellent, ta carte fonctionne bien !\r\n");
+    printf("Dorenavant, si tu appuyes sur le bouton RB0, la DEL verte s'allume.\r\n");
+    printf("Amuse-toi bien...\r\n\r\n");
+
+    while (1) {
+        IO_RA5_LAT = !IO_RB0_GetValue();
+    }
+
 }
 /**
  End of File
-*/
+ */
