@@ -22,4 +22,4 @@ Suivre les étapes suivantes :
 - Appuyer sur le bouton "Reset" de la carte PIC
 
 
-![Exemple d'utilisation de l'application](./assets/putty.png)
+![Exemple d'utilisation de l'application](./assets/example.png)
